@@ -2,7 +2,7 @@ package conf
 
   object oneIDConstant {
 
-    val ONE_ID:String = "hyper_id"
+    val ONE_ID:String = "one_id"
     val ID_MAP: String = "id_map"
     val GENERATE_DATE: String = "generate_date"
     val LEFT_TYPE: String = "left_type"

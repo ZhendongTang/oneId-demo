@@ -10,12 +10,13 @@ import util.{HashUtil, SparkEnv}
 object OneIDJob extends SparkEnv{
   private val logger = Logger.getLogger(getClass)
   def main(args: Array[String]): Unit = {
-    var inputPath = args(0)
-    var outputPath = args(1)
-    var ifUsePACC = args(2).toBoolean
+    val inputPath = args(0)
+    val outputPath = args(1)
+    val ifUsePACC = args(2).toBoolean
 //    val inputPath = "test-data/idmappingResult.txt"
 //    val outputPath = "test-data/oneIDResult.txt"
 //    val ifUsePACC = true
+    val t0 = System.currentTimeMillis()
     val orignalDataDF = readOrignalData(inputPath)
     orignalDataDF.show(50, truncate = false)
     //预处理
@@ -29,14 +30,18 @@ object OneIDJob extends SparkEnv{
     val vertexRdd = df2RawVertex.toRawVertex(etlData)
     //构建图
     val originalGraph = CreateGraph(edgeRdd, vertexRdd,ifUsePACC)
+    val t1 = System.currentTimeMillis()
     //pregel计算
     val computeGraph = ComputeGraph(originalGraph)
-    //存储为宽表
     val wideDF = Sink(computeGraph.vertices).getWideDF()
+    val t2 = System.currentTimeMillis()
 //    wideDF.write
 //      .mode(SaveMode.Overwrite)
 //      .option("header",true)
 //      .csv(outputPath)
+    logger.info(s"ifUsePACC: $ifUsePACC")
+    logger.info(s"init runs: ${(t1-t0)/1000.0}s")
+    logger.info(s"ComputeGraph runs: ${(t2-t1)/1000.0}s")
     wideDF.show(20, truncate = false)
   }
 
